@@ -1,0 +1,35 @@
+#! /bin/bash
+
+assembly(){
+fq1=$(ls $1/fq_file/*_R1.fq)
+/home/software/Python3/bin/python3 ./assembly.py      --species $1 \
+                                                      -inputfq1 $fq1 -inputfq2 ${fq1%_*}_R2.fq \
+                                                      -out_folder $1/reads_assembly \
+                                                      -rf reference/conserved-single-double-copy_loci.fa \
+                                                      -db common \
+                                                      -evalue 0.001 \
+                                                      -bf $(basename $fq)-blast.out \
+                                                      -rf1 reference/conserved-single-copy_loci.fa \
+                                                      -rf2 reference/conserved-double-copy_loci.fa \
+                                                      -g1_folder single-copy_loci \
+                                                      -g2_folder double-copy_loci \
+                                                      -db1 single-copy \
+                                                      -db2 double-copy
+
+}
+
+#--Note--#
+
+#1) input fastq (-inputfq1 $fq""_R1.fq -inputfq2 $fq""_R2.fq)
+#2) folder name of output (-out_folder zt_pipeline-result)
+#3) reference file (-rf ../reference/single-double_loci-Acipenser_ruthenus.fa)
+#4) database prefix (-db common)
+#5) e value (-evalue 0.001)
+#6) blastn result (-bf $(basename $fq)-blast.out)
+#7) genome-1 (-inputfa1 ../reference/common-single_loci-Acipenser_ruthenus.fa)
+#8) genome-2 (-inputfa2 ../reference/common-double_loci-Acipenser_ruthenus.fa)
+#9) fastq aligned to genome-1 (-g1_folder single-loci)
+#10) fastq aligned to genome-2 (-g2_folder double-loci)
+
+
+assembly $1

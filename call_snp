@@ -1,0 +1,74 @@
+#! /bin/bash
+
+call_snp1(){
+inputfolder=$1
+ref="consensus_ref.fa"
+species='albus platorynchus platorynchus2 suttkusi'
+result_folder=$inputfolder'/4-call_snp/fq_file2'
+ref_folder=$inputfolder'/4-call_snp/reference/'
+consensus_folder=$inputfolder'/3-fas/single-loci'
+fq_folder='fq_file'
+folder1='single-loci'
+
+##1.build bwa index
+mkdir -p $ref_folder
+cat $consensus_folder/*.consensus > $ref_folder/single-$ref
+bwa index $ref_folder/single-$ref
+
+##2. bwa align
+for i in $species
+do
+ mkdir -p $result_folder/$i/single-loci
+ cp $i/$fq_folder/*""_R1.fq  $result_folder/$i/single-loci/$i""_single_R1.fq
+ cp $i/$fq_folder/*""_R2.fq  $result_folder/$i/single-loci/$i""_single_R2.fq
+ bwa mem -t 30 $ref_folder/single-$ref $result_folder/$i/single-loci/$i""_single_R1.fq $result_folder/$i/single-loci/$i""_single_R2.fq | samtools view -bS | samtools sort -@ 20 -o $result_folder/$i/single-loci/$i.bam 
+done
+
+##3.build samtools index
+for i in $species
+do 
+ samtools index $result_folder/$i/single-loci/$i.bam
+done
+
+##4.call snp 
+bcftools mpileup -f $ref_folder/single-$ref $result_folder/albus/$folder1/albus.bam $result_folder/platorynchus/$folder1/platorynchus.bam $result_folder/platorynchus2/$folder1/platorynchus2.bam $result_folder/suttkusi/$folder1/suttkusi.bam | bcftools call -vm -Ov > $result_folder/all_single.snp.vcf
+vcftools --vcf $result_folder/all_single.snp.vcf --remove-indels --recode --recode-INFO-all --out $result_folder/all-single.snp.rmindel.filter
+}
+
+call_snp2(){
+inputfolder=$1
+ref="consensus_ref.fa"
+species='albus platorynchus platorynchus2 suttkusi'
+result_folder=$inputfolder'/4-call_snp/fq_file2'
+ref_folder=$inputfolder'/4-call_snp/reference'
+consensus_folder=$inputfolder'/3-fas/double-loci'
+fq_folder='fq_file'
+folder1='double-loci'
+
+##1.build bwa index
+#mkdir -p $ref_folder
+cat $consensus_folder/*.consensus > $ref_folder/double-$ref
+bwa index $ref_folder/double-$ref
+
+##2. bwa align
+for i in $species
+do
+ mkdir -p $result_folder/$i/double-loci
+ cp $i/$fq_folder/*""_R1.fq  $result_folder/$i/double-loci/$i""_double_R1.fq
+ cp $i/$fq_folder/*""_R2.fq  $result_folder/$i/double-loci/$i""_double_R2.fq
+ bwa mem -t 30 $ref_folder/double-$ref $result_folder/$i/double-loci/$i""_double_R1.fq $result_folder/$i/double-loci/$i""_double_R2.fq | samtools view -bS | samtools sort -@ 20 -o $result_folder/$i/double-loci/$i.bam 
+done
+
+##3.build samtools index
+for i in $species
+do 
+ samtools index $result_folder/$i/double-loci/$i.bam
+done
+
+##4.call snp 
+samtools mpileup -uvf $ref_folder/double-$ref $result_folder/albus/$folder1/albus.bam $result_folder/platorynchus/$folder1/platorynchus.bam $result_folder/platorynchus2/$folder1/platorynchus2.bam $result_folder/suttkusi/$folder1/suttkusi.bam | bcftools call -vm -Ov > $result_folder/all_double.snp.vcf
+vcftools --vcf $result_folder/all_double.snp.vcf --remove-indels --recode --recode-INFO-all --out $result_folder/all-double.snp.rmindel.filter
+}
+
+call_snp1 $1
+call_snp2 $1

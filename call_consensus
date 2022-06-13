@@ -1,0 +1,26 @@
+#! /bin/bash
+
+call_consensus(){
+/home/software/Python3/bin/python3 ./consensus.py   -in_folder reads-assembly \
+                                                    -out_folder ./$1 \
+                                                    -ss albus/:platorynchus/:platorynchus2/:suttkusi/ \
+                                                    -g1_folder single-copy_loci \
+                                                    -g2_folder double-copy_loci \
+                                                    --mafft_number $2
+
+}
+
+#--Note--#
+
+#1) input fastq (-inputfq1 $fq""_R1.fq -inputfq2 $fq""_R2.fq)
+#2) folder name of output (-out_folder zt_pipeline-result)
+#3) reference file (-rf ../reference/single-double_loci-Acipenser_ruthenus.fa)
+#4) database prefix (-db common)
+#5) e value (-evalue 0.001)
+#6) blastn result (-bf $(basename $fq)-blast.out)
+#7) genome-1 (-inputfa1 ../reference/common-single_loci-Acipenser_ruthenus.fa)
+#8) genome-2 (-inputfa2 ../reference/common-double_loci-Acipenser_ruthenus.fa)
+#9) fastq aligned to genome-1 (-g1_folder single-loci)
+#10) fastq aligned to genome-2 (-g2_folder double-loci)
+
+call_consensus $1 $2
